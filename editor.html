@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Visual - Tumbergia Azul</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2E86AB;
+            --bg-editor: #f0f2f5;
+            --sidebar-width: 350px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-editor); display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            background: var(--primary);
+            color: white;
+        }
+
+        .sidebar-header h1 { font-family: 'Playfair Display', serif; font-size: 1.5rem; }
+
+        .editor-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .section-group { margin-bottom: 25px; }
+        .section-group h2 { font-size: 0.9rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 5px; }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .form-group input[type="color"] { height: 40px; padding: 2px; cursor: pointer; }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background: #fafafa;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+
+        .preview-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #555;
+            position: relative;
+        }
+
+        .preview-header {
+            padding: 10px 20px;
+            background: #333;
+            color: #ccc;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #preview-iframe {
+            flex: 1;
+            border: none;
+            background: white;
+            width: 100%;
+            height: 100%;
+        }
+
+        .device-toggle { display: flex; gap: 10px; }
+        .device-btn { background: none; border: 1px solid #444; color: #ccc; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .device-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .mobile-preview #preview-iframe {
+            max-width: 375px;
+            margin: 20px auto;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            height: calc(100% - 40px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>Editor Tumbergia</h1>
+        </div>
+        
+        <div class="editor-content">
+            <div class="section-group">
+                <h2>Cores e Estilo</h2>
+                <div class="form-group">
+                    <label>Cor Principal</label>
+                    <input type="color" id="colorPrimary" value="#2E86AB">
+                </div>
+                <div class="form-group">
+                    <label>Fundo do Site</label>
+                    <input type="color" id="colorBg" value="#FAF8F6">
+                </div>
+            </div>
+
+            <div class="section-group">
+                <h2>Identidade</h2>
+                <div class="form-group">
+                    <label>Nome do Chalé</label>
+                    <input type="text" id="siteName" value="Tumbergia Azul">
+                </div>
+                <div class="form-group">
+                    <label>Slogan/Boas-vindas</label>
+                    <input type="text" id="siteSlogan" value="Bem-vindo ao">
+                </div>
+            </div>
+
+            <div class="section-group">
+                <h2>Contatos</h2>
+                <div class="form-group">
+                    <label>WhatsApp (apenas números)</label>
+                    <input type="text" id="contactWhatsapp" value="5535998425147">
+                </div>
+                <div class="form-group">
+                    <label>Telefone Exibição</label>
+                    <input type="text" id="contactPhone" value="(35) 99842-5147">
+                </div>
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="contactEmail" value="tumbergiaazul@gmail.com">
+                </div>
+            </div>
+
+            <div class="section-group">
+                <h2>Regras da Casa</h2>
+                <div class="form-group">
+                    <label>Horários (Check-in/Out)</label>
+                    <textarea id="rulesHours" rows="2">Check-in após 16h e check-out até 12h sendo ambos flexiveis. Silêncio após 22h para respeitar vizinhos.</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Capacidade</label>
+                    <textarea id="rulesCapacity" rows="2">O chalé acomoda até 2 pessoas. Visitas devem ser autorizadas previamente.</textarea>
+                </div>
+            </div>
+
+            <div class="section-group">
+                <h2>Wi-Fi</h2>
+                <div class="form-group">
+                    <label>Nome da Rede</label>
+                    <input type="text" id="wifiSsid" value="Tumbergia Azul">
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="text" id="wifiPassword" value="alameda561">
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-primary" id="btn-save">Salvar Alterações</button>
+            <p style="font-size: 0.7rem; color: #999; margin-top: 10px; text-align: center;">As alterações serão aplicadas em todo o site.</p>
+        </div>
+    </div>
+
+    <div class="preview-area" id="preview-container">
+        <div class="preview-header">
+            <span>Prévia em Tempo Real</span>
+            <div class="device-toggle">
+                <button class="device-btn" id="btn-desktop">Desktop</button>
+                <button class="device-btn active" id="btn-mobile">Mobile</button>
+            </div>
+        </div>
+        <iframe id="preview-iframe" src="index.html"></iframe>
+    </div>
+
+    <script>
+        const iframe = document.getElementById('preview-iframe');
+        const btnSave = document.getElementById('btn-save');
+        
+        const defaultConfig = {
+            colorPrimary: '#2E86AB',
+            colorBg: '#FAF8F6',
+            siteName: 'Tumbergia Azul',
+            siteSlogan: 'Bem-vindo ao',
+            contactWhatsapp: '5535998425147',
+            contactPhone: '(35) 99842-5147',
+            contactEmail: 'tumbergiaazul@gmail.com',
+            rulesHours: 'Check-in após 16h e check-out até 12h sendo ambos flexiveis. Silêncio após 22h para respeitar vizinhos.',
+            rulesCapacity: 'O chalé acomoda até 2 pessoas. Visitas devem ser autorizadas previamente.',
+            wifiSsid: 'Tumbergia Azul',
+            wifiPassword: 'alameda561'
+        };
+
+        let currentConfig = JSON.parse(localStorage.getItem('chalet_config')) || defaultConfig;
+
+        // Populate inputs
+        function populateInputs() {
+            Object.keys(currentConfig).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) input.value = currentConfig[key];
+            });
+        }
+
+        function updatePreview() {
+            const previewDoc = iframe.contentDocument || iframe.contentWindow.document;
+            if (!previewDoc) return;
+
+            // Apply styles
+            const root = previewDoc.documentElement;
+            if (root) {
+                root.style.setProperty('--primary', currentConfig.colorPrimary, 'important');
+                root.style.setProperty('--bg-main', currentConfig.colorBg, 'important');
+            }
+
+            // Update common texts
+            const titles = previewDoc.querySelectorAll('h1, .logo, .footer-content h3');
+            titles.forEach(el => {
+                if (el.textContent.includes('Tumbergia Azul') || el.textContent === currentConfig.siteName) {
+                     el.textContent = currentConfig.siteName;
+                }
+            });
+
+            // Specific page logic
+            const path = iframe.contentWindow.location.pathname;
+            if (path.includes('index.html') || path === '/' || path === '') {
+                const slogan = previewDoc.querySelector('.header-home p');
+                if (slogan) slogan.textContent = currentConfig.siteSlogan;
+            } else if (path.includes('regras.html')) {
+                 const rules = previewDoc.querySelectorAll('.card p');
+                 rules.forEach(p => {
+                     if (p.textContent.includes('Check-in')) p.textContent = currentConfig.rulesHours;
+                     if (p.textContent.includes('acomoda até')) p.textContent = currentConfig.rulesCapacity;
+                 });
+            } else if (path.includes('contato.html')) {
+                 const links = previewDoc.querySelectorAll('.info-item a');
+                 links.forEach(a => {
+                     if (a.href.startsWith('tel:')) {
+                         a.href = 'tel:' + currentConfig.contactPhone.replace(/\D/g, '');
+                         a.textContent = currentConfig.contactPhone;
+                     }
+                     if (a.href.startsWith('mailto:')) {
+                         a.href = 'mailto:' + currentConfig.contactEmail;
+                         a.textContent = currentConfig.contactEmail;
+                     }
+                     if (a.href.includes('wa.me')) {
+                         a.href = `https://wa.me/${currentConfig.contactWhatsapp}?text=Olá!%20Gostaria%20de%20informações%20sobre%20o%20${encodeURIComponent(currentConfig.siteName)}`;
+                     }
+                 });
+            } else if (path.includes('wifi.html')) {
+                const ssid = previewDoc.querySelector('.card-title');
+                if (ssid) ssid.textContent = 'Rede:' + currentConfig.wifiSsid;
+            }
+        }
+
+        // Event Listeners for inputs
+        document.querySelectorAll('input, textarea').forEach(el => {
+            el.addEventListener('input', (e) => {
+                currentConfig[e.target.id] = e.target.value;
+                updatePreview();
+            });
+        });
+
+        btnSave.addEventListener('click', () => {
+            localStorage.setItem('chalet_config', JSON.stringify(currentConfig));
+            alert('Configurações salvas com sucesso! O site agora refletirá as mudanças.');
+            iframe.contentWindow.location.reload();
+        });
+
+        document.getElementById('btn-desktop').onclick = () => {
+            document.getElementById('preview-container').classList.remove('mobile-preview');
+            document.getElementById('btn-desktop').classList.add('active');
+            document.getElementById('btn-mobile').classList.remove('active');
+        };
+
+        document.getElementById('btn-mobile').onclick = () => {
+            document.getElementById('preview-container').classList.add('mobile-preview');
+            document.getElementById('btn-mobile').classList.add('active');
+            document.getElementById('btn-desktop').classList.remove('active');
+        };
+
+        iframe.onload = updatePreview;
+
+        populateInputs();
+    </script>
+</body>
+</html>
